@@ -2,24 +2,24 @@ from loguru import logger
 from aiogram import types
 from aiogram import F
 from aiogram.filters import CommandStart, Command
-from aiogram.utils.markdown import hbold
+from aiogram.utils.markdown import bold
 from aiogram.types import Message
 
-from app.bot import telegram_router
+from app.bot import dp
 
-@telegram_router.message(Command("id"))
+@dp.message(Command("id"))
 async def cmd_id(message: Message) -> None:
     await message.answer(f"Your ID: {message.from_user.id}")
 
-@telegram_router.message(Command("chat"))
+@dp.message(Command("chat"))
 async def cmd_chat(message: Message) -> None:
     await message.answer(f"Chat ID: {message.chat.id}")
 
-@telegram_router.message(CommandStart())
+@dp.message(CommandStart())
 async def cmd_start(message: Message) -> None:
-    await message.answer(f"Hello, {hbold(message.from_user.full_name)}!")
+    await message.answer(f"Hello, {bold(message.from_user.full_name)}!")
 
-@telegram_router.message(F.text == "echo")
+@dp.message(F.text == "echo")
 async def echo(message: types.Message) -> None:
     try:
         await message.send_copy(chat_id=message.chat.id)
@@ -27,7 +27,7 @@ async def echo(message: types.Message) -> None:
         logger.error(f"Can't send message - {e}")
         await message.answer("Nice try!")
 
-@telegram_router.message(F.text == "ping")
+@dp.message(F.text == "ping")
 async def hello(message: types.Message) -> None:
     try:
         await message.answer("pong")

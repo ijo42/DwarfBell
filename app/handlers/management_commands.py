@@ -4,11 +4,11 @@ from aiogram.types import Message
 from aiogram.filters import Command
 
 from app.redis_pool import get_redis_client
-from app.bot import telegram_router
+from app.bot import dp
 from app.rest_client import test_connection
 
 
-@telegram_router.message(Command("setup"))
+@dp.message(Command("setup"))
 async def cmd_endpoint(message: Message) -> None:
     command_parts = message.text.split(maxsplit=2)
 

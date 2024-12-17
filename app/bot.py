@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-from aiogram import Bot, Dispatcher, Router
-from aiogram.client.default import DefaultBotProperties
+import asyncio
+
+from aiogram import Bot, Dispatcher
 from aiogram.types import WebhookInfo, BotCommand
 from loguru import logger
 
@@ -9,15 +10,13 @@ from app.system import first_run
 
 cfg: Settings = get_settings()
 
-telegram_router = Router(name="telegram")
+
+bot = Bot(token=cfg.bot_token)
 dp = Dispatcher()
 
+import app.handlers
 
-dp.include_router(telegram_router)
-bot = Bot(token=cfg.bot_token, default=DefaultBotProperties(parse_mode='HTML'))
-
-
-async def set_webhook(my_bot: Bot) -> None:
+async def start_polling(my_bot: Bot) -> None:
     # Check and set webhook for Telegram
     async def check_webhook() -> WebhookInfo | None:
         try:
@@ -31,14 +30,12 @@ async def set_webhook(my_bot: Bot) -> None:
     if cfg.debug:
         logger.debug(f"Current bot info: {current_webhook_info}")
     try:
-        await my_bot.set_webhook(
-            f"{cfg.base_webhook_url}{cfg.webhook_path}",
-            secret_token=cfg.telegram_my_token,
-            drop_pending_updates=current_webhook_info.pending_update_count > 0,
-            max_connections=40 if cfg.debug else 100,
-        )
+        if len(current_webhook_info.url) > 0:
+            logger.debug("Cleaning webhook...")
+            await bot.delete_webhook()
         if cfg.debug:
-            logger.debug(f"Updated bot info: {await check_webhook()}")
+            logger.debug(f"Bot starting...")
+        asyncio.create_task(dp.start_polling(my_bot))
     except Exception as e:
         logger.error(f"Can't set webhook - {e}")
 
@@ -61,5 +58,8 @@ async def start_telegram():
     if cfg.debug:
         logger.debug(f"First run: {fr}")
     if fr:
-        await set_webhook(bot)
         await set_bot_commands_menu(bot)
+    await start_polling(bot)
+
+async def stop_telegram():
+    await dp.stop_polling()
