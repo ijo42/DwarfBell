@@ -5,7 +5,7 @@ from aiogram.filters import CommandStart, Command
 from aiogram.utils.markdown import hbold
 from aiogram.types import Message
 
-from src.bot import telegram_router
+from app.bot import telegram_router
 
 @telegram_router.message(Command("id"))
 async def cmd_id(message: Message) -> None:

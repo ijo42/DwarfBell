@@ -4,8 +4,8 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.types import WebhookInfo, BotCommand
 from loguru import logger
 
-from settings import get_settings, Settings
-from system import first_run
+from app.settings import get_settings, Settings
+from app.system import first_run
 
 cfg: Settings = get_settings()
 

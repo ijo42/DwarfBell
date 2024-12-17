@@ -5,8 +5,8 @@ from fastapi import APIRouter, Header
 from loguru import logger
 from aiogram import types
 
-from bot import bot, dp
-from settings import get_settings
+from app.bot import bot, dp
+from app.settings import get_settings
 
 cfg = get_settings()
 

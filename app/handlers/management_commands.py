@@ -3,9 +3,9 @@ from loguru import logger
 from aiogram.types import Message
 from aiogram.filters import Command
 
-from src.redis_pool import get_redis_client
-from src.bot import telegram_router
-from src.rest_client import test_connection
+from app.redis_pool import get_redis_client
+from app.bot import telegram_router
+from app.rest_client import test_connection
 
 
 @telegram_router.message(Command("setup"))

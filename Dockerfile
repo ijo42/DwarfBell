@@ -1,32 +1,18 @@
-FROM python:3.13-slim as base
+# Be aware that you need to specify these arguments before the first FROM
+# see: https://docs.docker.com/engine/reference/builder/#understand-how-arg-and-from-interact
+ARG BASE_IMAGE=pfeiffermax/uvicorn-poetry:3.3.0-python3.12.2-slim-bookworm
+FROM ${BASE_IMAGE} AS dependencies-build-stage
 
-ENV PYTHONFAULTHANDLER=1 \
-    PYTHONHASHSEED=random \
-    PYTHONUNBUFFERED=1
+# install [tool.poetry.dependencies]
+# this will install virtual environment into /.venv because of POETRY_VIRTUALENVS_IN_PROJECT=true
+# see: https://python-poetry.org/docs/configuration/#virtualenvsin-project
+COPY ./poetry.lock ./pyproject.toml /application_root/
+RUN poetry install --no-interaction --no-root --without dev
 
-WORKDIR /app
+FROM ${BASE_IMAGE} AS production-image
 
-FROM base as builder
+# Copy virtual environment
+COPY --chown=python_application:python_application --from=dependencies-build-stage /application_root/.venv /application_root/.venv
 
-ENV PIP_DEFAULT_TIMEOUT=100 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    PIP_NO_CACHE_DIR=1 \
-    POETRY_VERSION=1.8.5
-
-RUN pip install "poetry==$POETRY_VERSION"
-
-COPY pyproject.toml poetry.lock README.md ./
-COPY src ./src
-
-RUN poetry config virtualenvs.in-project true && \
-    poetry install --only=main --no-root && \
-    poetry build
-
-FROM base as final
-
-COPY --from=builder /app/.venv ./.venv
-COPY --from=builder /app/dist .
-COPY docker-entrypoint.sh .
-
-RUN ./.venv/bin/pip install *.whl
-CMD ["./docker-entrypoint.sh"]
+# Copy application files
+COPY --chown=python_application:python_application /app /application_root/app/
