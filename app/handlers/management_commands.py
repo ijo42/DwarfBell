@@ -33,3 +33,16 @@ async def cmd_endpoint(message: Message) -> None:
     except Exception as e:
         await message.answer("An error occurred while saving data. Please try again later.")
         logger.error(f"Error saving endpoint: {e}")
+
+@dp.message(Command("tasks"))
+async def cmd_tasks(message: Message) -> None:
+    tasks = await get_all_tasks()
+    if not tasks:
+        await message.answer("Unable to fetch tasks. Please check your connection.")
+        return
+
+    response = "Available tasks:\n\n"
+    for task in tasks:
+        response += f"- {task['name']} ({task['value']})\n"
+
+    await message.answer(response)

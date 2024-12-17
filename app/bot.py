@@ -6,7 +6,7 @@ from aiogram.types import WebhookInfo, BotCommand
 from loguru import logger
 
 from app.settings import get_settings, Settings
-from app.system import first_run
+from app.system import first_run, check_ctfd
 
 cfg: Settings = get_settings()
 
@@ -46,6 +46,7 @@ async def set_bot_commands_menu(my_bot: Bot) -> None:
         BotCommand(command="/id", description="👋 Get my ID"),
         BotCommand(command="/chat", description="👋 Get chat ID"),
         BotCommand(command="/setup", description="Set ctfd endpoint. Format: <endpoint> <token>"),
+        BotCommand(command="/tasks", description="Get tasks"),
     ]
     try:
         await my_bot.set_my_commands(commands)
