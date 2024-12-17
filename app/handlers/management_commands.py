@@ -3,9 +3,9 @@ from loguru import logger
 from aiogram.types import Message
 from aiogram.filters import Command
 
-from app.redis_pool import get_redis_client
+from app.redis_pool import set_redis_keys
 from app.bot import dp
-from app.rest_client import test_connection
+from app.rest_client import test_connection, get_all_tasks
 
 
 @dp.message(Command("setup"))
@@ -27,11 +27,8 @@ async def cmd_endpoint(message: Message) -> None:
     if not connection:
         await message.answer("Unable to connect to the provided URL or token is invalid.")
         return
-
-    client = get_redis_client()
     try:
-        await client.set("endpoint", url)
-        await client.set("token", token)
+        await set_redis_keys({'endpoint': url, 'token': token})
         await message.answer(f"Connection setup successful. Username: {connection}")
     except Exception as e:
         await message.answer("An error occurred while saving data. Please try again later.")

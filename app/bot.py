@@ -59,6 +59,7 @@ async def start_telegram():
         logger.debug(f"First run: {fr}")
     if fr:
         await set_bot_commands_menu(bot)
+    await check_ctfd()
     await start_polling(bot)
 
 async def stop_telegram():
