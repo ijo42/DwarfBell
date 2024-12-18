@@ -21,5 +21,7 @@ async def lifespan(application: FastAPI):
     finally:
         from app.bot import stop_telegram
         await stop_telegram()
+
+
 app = FastAPI(lifespan=lifespan)
 app.include_router(root_router)

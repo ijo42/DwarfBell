@@ -1,17 +1,16 @@
 from typing import Optional
 
-from aiogram.utils.markdown import bold, blockquote, pre
-from aiohttp.helpers import quoted_string
-from magic_filter import F
 from aiogram.enums import ParseMode
-from aiogram.filters.callback_data import CallbackData
-from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
-from loguru import logger
-from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
+from aiogram.filters.callback_data import CallbackData
+from aiogram.types import Message, CallbackQuery
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.utils.markdown import pre
+from loguru import logger
+from magic_filter import F
 
-from app.redis_pool import set_redis_keys
 from app.bot import dp
+from app.redis_pool import set_redis_keys, RedisKeys
 from app.rest_client import test_connection, get_all_tasks, get_task_by_id
 
 
@@ -35,7 +34,7 @@ async def cmd_endpoint(message: Message) -> None:
         await message.answer("Unable to connect to the provided URL or token is invalid.")
         return
     try:
-        await set_redis_keys({'endpoint': url, 'token': token})
+        await set_redis_keys({RedisKeys.ENDPOINT: url, RedisKeys.TOKEN: token})
         await message.answer(f"Connection setup successful. Username: {connection}")
     except Exception as e:
         await message.answer("An error occurred while saving data. Please try again later.")
@@ -45,6 +44,7 @@ async def cmd_endpoint(message: Message) -> None:
 class TaskCallbackFactory(CallbackData, prefix="task"):
     action: str
     value: Optional[int] = None
+
 
 @dp.message(Command("tasks"))
 async def cmd_tasks(message: Message) -> None:
@@ -61,6 +61,7 @@ async def cmd_tasks(message: Message) -> None:
         )
     builder.adjust(4)
     await message.answer(response, reply_markup=builder.as_markup())
+
 
 @dp.callback_query(TaskCallbackFactory.filter(F.action == "get"))
 async def callbacks_num_change_fab(

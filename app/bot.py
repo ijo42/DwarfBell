@@ -10,11 +10,9 @@ from app.system import first_run, check_ctfd
 
 cfg: Settings = get_settings()
 
-
 bot = Bot(token=cfg.bot_token)
 dp = Dispatcher()
 
-import app.handlers
 
 async def start_polling(my_bot: Bot) -> None:
     # Check and set webhook for Telegram
@@ -62,6 +60,7 @@ async def start_telegram():
         await set_bot_commands_menu(bot)
     await check_ctfd()
     await start_polling(bot)
+
 
 async def stop_telegram():
     await dp.stop_polling()

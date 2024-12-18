@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 from os import getppid
 
-from loguru import logger
-
-from app.redis_pool import get_redis_key, set_redis_key, get_redis_keys
+from app.redis_pool import get_redis_key, set_redis_key, get_redis_keys, RedisKeys
 from app.rest_client import init_rest_client
 from app.settings import get_settings
 
@@ -20,6 +18,7 @@ async def first_run() -> bool:
     await set_redis_key('tg_bot_ppid', str(ppid))
     return True
 
+
 async def check_ctfd():
-    endpoint, token = await get_redis_keys(['endpoint', 'token'])
+    endpoint, token = await get_redis_keys([RedisKeys.ENDPOINT, RedisKeys.TOKEN])
     await init_rest_client(endpoint, token)

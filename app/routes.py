@@ -3,7 +3,6 @@
 from fastapi import APIRouter
 
 from app.settings import get_settings
-from app.bot import bot, dp
 
 cfg = get_settings()
 
