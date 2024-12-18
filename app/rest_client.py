@@ -81,3 +81,17 @@ async def get_all_tasks() -> list | None:
     except Exception as e:
         logger.error(f"Error fetching tasks: {e}")
         return None
+
+async def get_task_by_id(task_id: int) -> dict | None:
+    try:
+        async with get_client() as client:
+            response = await client.get(f"/api/v1/challenges/{task_id}")
+            response.raise_for_status()
+            logger.debug(f"Task fetched: {response.json()}")
+            return response.json()['data']
+    except httpx.HTTPStatusError as e:
+        logger.error(f"Failed to fetch task with ID {task_id}. Status: {e.response.status_code}")
+        return None
+    except Exception as e:
+        logger.error(f"Error fetching task with ID {task_id}: {e}")
+        return None
