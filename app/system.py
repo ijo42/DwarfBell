@@ -20,5 +20,5 @@ async def first_run() -> bool:
 
 
 async def check_ctfd():
-    endpoint, token = await get_redis_keys([RedisKeys.ENDPOINT, RedisKeys.TOKEN])
+    endpoint, token = await get_redis_keys([RedisKeys.ENDPOINT.value, RedisKeys.TOKEN.value])
     await init_rest_client(endpoint, token)

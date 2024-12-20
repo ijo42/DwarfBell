@@ -12,14 +12,13 @@ cfg = get_settings()
 
 @asynccontextmanager
 async def lifespan(application: FastAPI):
+    from app.bot import start_telegram, stop_telegram
     try:
         logger.info("🚀 Starting application")
-        from app.bot import start_telegram, dp, bot
         await start_telegram()
         yield
         logger.info("⛔ Stopping application")
     finally:
-        from app.bot import stop_telegram
         await stop_telegram()
 
 

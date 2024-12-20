@@ -15,7 +15,6 @@ dp = Dispatcher()
 
 
 async def start_polling(my_bot: Bot) -> None:
-    # Check and set webhook for Telegram
     async def check_webhook() -> WebhookInfo | None:
         try:
             webhook_info = await my_bot.get_webhook_info()
@@ -32,7 +31,7 @@ async def start_polling(my_bot: Bot) -> None:
             logger.debug("Cleaning webhook...")
             await bot.delete_webhook()
         if cfg.debug:
-            logger.debug(f"Bot starting...")
+            logger.debug(f"Bot starting {await my_bot.get_my_name()}...")
         asyncio.create_task(dp.start_polling(my_bot))
     except Exception as e:
         logger.error(f"Can't set webhook - {e}")

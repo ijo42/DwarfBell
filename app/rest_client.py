@@ -3,6 +3,9 @@ from contextlib import asynccontextmanager
 import httpx
 from loguru import logger
 
+from app.models.challenge import Challenge
+from app.models.challenge_lite import Challenge as ChallengeLite
+
 _cached_base_url = None
 _cached_token = None
 
@@ -76,31 +79,26 @@ async def post(endpoint: str, data: dict = None, json: dict = None) -> httpx.Res
             logger.error(f"An error occurred: {e}")
             raise
 
-
-async def get_all_tasks() -> list | None:
+async def get_all_tasks() -> list[ChallengeLite] | None:
     try:
-        async with get_client() as client:
-            response = await client.get("/api/v1/challenges")
-            response.raise_for_status()
-            return response.json()['data']
-    except httpx.HTTPStatusError as e:
-        logger.error(f"Failed to fetch tasks. Status: {e.response.status_code}")
-        return None
-    except Exception as e:
-        logger.error(f"Error fetching tasks: {e}")
+        response = await get("/api/v1/challenges")
+        return [ChallengeLite(s) for s in response.json()['data']]
+    except Exception:
         return None
 
 
-async def get_task_by_id(task_id: int) -> dict | None:
+async def get_task_by_id(task_id: int) -> Challenge | None:
     try:
-        async with get_client() as client:
-            response = await client.get(f"/api/v1/challenges/{task_id}")
-            response.raise_for_status()
-            logger.debug(f"Task fetched: {response.json()}")
-            return response.json()['data']
-    except httpx.HTTPStatusError as e:
-        logger.error(f"Failed to fetch task with ID {task_id}. Status: {e.response.status_code}")
+        response = await get(f"/api/v1/challenges/{task_id}")
+        logger.debug(f"Task fetched: {response.json()}")
+        return Challenge(response.json()['data'])
+    except Exception:
         return None
+
+async def make_attempt(task_id: str, answer: str) -> dict:
+    try:
+        response = await post("/api/v1/challenges/attempt", json={"submission": answer, 'challenge_id': task_id})
+        logger.debug(f"Attempt made ({task_id}:{answer}): {response.json()['data']}")
+        return response.json()['data']
     except Exception as e:
-        logger.error(f"Error fetching task with ID {task_id}: {e}")
         return None
