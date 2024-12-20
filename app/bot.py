@@ -47,7 +47,7 @@ async def set_bot_commands_menu(my_bot: Bot) -> None:
         BotCommand(command="/setup", description="Set ctfd endpoint. Format: <endpoint> <token>"),
         BotCommand(command="/tasks", description="Get tasks"),
         BotCommand(command="/start_solve", description="Start solve. Format: <interval>"),
-        BotCommand(command="/append", description="Attempt flag"),
+        BotCommand(command="/attempt", description="Attempt flag"),
     ]
     try:
         await my_bot.set_my_commands(commands)

@@ -1,17 +1,11 @@
-from typing import Optional
-
 from aiogram.enums import ParseMode
 from aiogram.filters import Command
-from aiogram.filters.callback_data import CallbackData
-from aiogram.types import Message, CallbackQuery
-from aiogram.utils.keyboard import InlineKeyboardBuilder
-from aiogram.utils.markdown import pre
+from aiogram.types import Message
 from loguru import logger
-from magic_filter import F
 
 from app.bot import dp
 from app.redis_pool import set_redis_keys, RedisKeys
-from app.rest_client import test_connection, get_all_tasks, get_task_by_id
+from app.rest_client import test_connection
 
 
 @dp.message(Command("setup"))
@@ -34,52 +28,8 @@ async def cmd_endpoint(message: Message) -> None:
         await message.answer("Unable to connect to the provided URL or token is invalid.")
         return
     try:
-        await set_redis_keys({RedisKeys.ENDPOINT: url, RedisKeys.TOKEN: token})
+        await set_redis_keys({RedisKeys.ENDPOINT.value: url, RedisKeys.TOKEN.value: token})
         await message.answer(f"Connection setup successful. Username: {connection}")
     except Exception as e:
         await message.answer("An error occurred while saving data. Please try again later.")
         logger.error(f"Error saving endpoint: {e}")
-
-
-class TaskCallbackFactory(CallbackData, prefix="task"):
-    action: str
-    value: Optional[int] = None
-
-
-@dp.message(Command("tasks"))
-async def cmd_tasks(message: Message) -> None:
-    tasks = await get_all_tasks()
-    if not tasks:
-        await message.answer("Unable to fetch tasks. Please check your connection.")
-        return
-    builder = InlineKeyboardBuilder()
-    response = "Available tasks:\n\n"
-    for task in tasks:
-        response += f"- {task['name']} ({task['value']})\n"
-        builder.button(
-            text=task['name'], callback_data=TaskCallbackFactory(action="get", value=task['id'])
-        )
-    builder.adjust(4)
-    await message.answer(response, reply_markup=builder.as_markup())
-
-
-@dp.callback_query(TaskCallbackFactory.filter(F.action == "get"))
-async def callbacks_num_change_fab(
-        callback: CallbackQuery,
-        callback_data: TaskCallbackFactory
-):
-    task = await get_task_by_id(callback_data.value)
-    if task:
-        response = (
-            f"*Task:* {task['name']}\n"
-            f"*Category:* {task['category']}\n"
-            f"*Value:* {task['value']}\n"
-            f"*Description:*\n"
-            f"{pre(f"{task['description'][:500]}{"..." if len(task['description']) > 500 else ""}").replace('\\', '')}\n"
-            f"*Connection Info:* {task['connection_info']}\n"
-            f"*Solves:* {task['solves']}"
-        )
-        await callback.message.answer(text=response, parse_mode=ParseMode.MARKDOWN)
-    else:
-        await callback.message.answer(text="Failed to retrieve task details.")
-    await callback.answer()
